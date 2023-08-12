@@ -18,6 +18,8 @@ const client = new MongoClient(uri, {
   },
 });
 
+// console.log(new ObjectId());
+
 const run = async () => {
   try {
     const db = client.db("jobbox");
@@ -97,7 +99,8 @@ const run = async () => {
       const updateDoc = {
         $push: {
           queries: {
-            id: new ObjectId(userId),
+            _id: new ObjectId(),
+            questionerId: new ObjectId(userId),
             email,
             question: question,
             reply: [],
@@ -117,10 +120,10 @@ const run = async () => {
     app.patch("/reply", async (req, res) => {
       const userId = req.body.userId;
       const reply = req.body.reply;
-      console.log(reply);
-      console.log(userId);
+      // console.log(reply);
+      // console.log(userId);
 
-      const filter = { "queries.id": new ObjectId(userId) };
+      const filter = { "queries._id": new ObjectId(userId) };
 
       const updateDoc = {
         $push: {
@@ -128,7 +131,7 @@ const run = async () => {
         },
       };
       const arrayFilter = {
-        arrayFilters: [{ "user.id": new ObjectId(userId) }],
+        arrayFilters: [{ "user._id": new ObjectId(userId) }],
       };
 
       const result = await jobCollection.updateOne(
