@@ -18,8 +18,6 @@ const client = new MongoClient(uri, {
   },
 });
 
-// console.log(new ObjectId());
-
 const run = async () => {
   try {
     const db = client.db("jobbox");
@@ -89,6 +87,24 @@ const run = async () => {
       res.send({ status: false });
     });
 
+    app.patch("/status", async (req, res) => {
+      const jobId = req.body.id;
+      const piece = await jobCollection.findOne({ _id: new ObjectId(jobId) });
+
+      const filter = { _id: new ObjectId(jobId) };
+      const updateDoc = {
+        $set: { openStatus: !piece.openStatus },
+      };
+
+      const result = await jobCollection.updateOne(filter, updateDoc);
+
+      if (result.acknowledged) {
+        return res.send({ status: true, data: result });
+      }
+
+      res.send({ status: false });
+    });
+
     app.patch("/query", async (req, res) => {
       const userId = req.body.userId;
       const jobId = req.body.jobId;
@@ -120,8 +136,6 @@ const run = async () => {
     app.patch("/reply", async (req, res) => {
       const userId = req.body.userId;
       const reply = req.body.reply;
-      // console.log(reply);
-      // console.log(userId);
 
       const filter = { "queries._id": new ObjectId(userId) };
 
